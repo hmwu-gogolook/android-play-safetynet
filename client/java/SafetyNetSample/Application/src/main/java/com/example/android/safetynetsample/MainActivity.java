@@ -20,9 +20,10 @@ package com.example.android.safetynetsample;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.v4.app.FragmentTransaction;
 import android.view.Menu;
 import android.widget.TextView;
+
+import androidx.fragment.app.FragmentTransaction;
 
 import com.example.android.common.activities.SampleActivityBase;
 import com.example.android.common.logger.Log;
