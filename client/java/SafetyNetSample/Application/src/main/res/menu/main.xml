@@ -21,6 +21,10 @@
             app:showAsAction="ifRoom|withText"
             android:title="Verify Device"/>
     <item
+            android:id="@+id/action_verify_url"
+            app:showAsAction="ifRoom|withText"
+            android:title="Verify URL"/>
+    <item
             android:id="@+id/action_share"
             app:showAsAction="ifRoom|withText"
             android:title="Share Result"/>

@@ -15,20 +15,26 @@
 */
 package com.example.android.safetynetsample;
 
+import android.app.Activity;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.MenuItem;
+import android.widget.EditText;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 
 import com.example.android.common.logger.Log;
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.common.api.CommonStatusCodes;
+import com.google.android.gms.safetynet.SafeBrowsingThreat;
 import com.google.android.gms.safetynet.SafetyNet;
 import com.google.android.gms.safetynet.SafetyNetApi;
 import com.google.android.gms.safetynet.SafetyNetClient;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
@@ -85,6 +91,9 @@ public class SafetyNetSampleFragment extends Fragment {
             case R.id.action_share:
                 shareResult();
                 return true;
+            case R.id.action_verify_url:
+                verifyUrl();
+                return true;
             case R.id.action_verify:
                 sendSafetyNetRequest();
                 return true;
@@ -97,6 +106,64 @@ public class SafetyNetSampleFragment extends Fragment {
         super.onSaveInstanceState(outState);
 
         outState.putString(BUNDLE_RESULT, mResult);
+    }
+
+    private void verifyUrl() {
+        final Activity activity = getActivity();
+        if (activity == null || activity.isFinishing()) {
+            return;
+        }
+
+        final EditText editText = new EditText(activity);
+
+        AlertDialog dialog = new AlertDialog.Builder(activity)
+                .setTitle("Enter URL")
+                .setView(editText)
+                .setPositiveButton("verify", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        String url = editText.getText().toString();
+                        Log.d(TAG, "hm] url to be verify: " + url);
+
+                        SafetyNetClient client = SafetyNet.getClient(activity);
+                        client.initSafeBrowsing(); // should init before use API
+                        client
+                                .lookupUri(
+                                        url,
+                                        BuildConfig.API_KEY,
+                                        0,
+                                        1,
+                                        2,
+                                        3,
+                                        SafeBrowsingThreat.TYPE_POTENTIALLY_HARMFUL_APPLICATION,
+                                        SafeBrowsingThreat.TYPE_SOCIAL_ENGINEERING,
+                                        6,
+                                        7,
+                                        8,
+                                        9
+                                )
+                                .addOnCompleteListener(new OnCompleteListener<SafetyNetApi.SafeBrowsingResponse>() {
+                                    @Override
+                                    public void onComplete(@NonNull Task<SafetyNetApi.SafeBrowsingResponse> task) {
+                                        Log.d(TAG, "hm] onComplete} ");
+                                    }
+                                })
+                                .addOnFailureListener(new OnFailureListener() {
+                                    @Override
+                                    public void onFailure(@NonNull Exception e) {
+                                        Log.d(TAG, "hm] onFailure} " + e.toString());
+                                    }
+                                })
+                                .addOnSuccessListener(new OnSuccessListener<SafetyNetApi.SafeBrowsingResponse>() {
+                                    @Override
+                                    public void onSuccess(SafetyNetApi.SafeBrowsingResponse safeBrowsingResponse) {
+                                        Log.d(TAG, "hm] onSuccess} " + safeBrowsingResponse.getDetectedThreats().toString());
+                                    }
+                                });
+                    }
+                })
+                .create();
+        dialog.show();
     }
 
     private void sendSafetyNetRequest() {
